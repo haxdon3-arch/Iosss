@@ -1,12 +1,19 @@
-TARGET := iphone:clang:latest:14.0
-INSTALL_TARGET_PROCESSES = Horrorfield
-ARCHS = arm64
-
-include $(THEOS)/makefiles/common.mk
-TWEAK_NAME = NoAdsAndVip
-
-NoAdsAndVip_FILES = Tweak.xm
-NoAdsAndVip_CFLAGS = -fobjc-arc
-NoAdsAndVip_FRAMEWORKS = UIKit Foundation
-
-include $(THEOS)/makefiles/tweak.mk
+name: Build iOS Tweak
+on: [push]
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Theos
+        run: |
+          git clone --recursive https://github.com/theos/theos.git $HOME/theos
+      - name: Compile Dylib
+        run: |
+          export THEOS=$HOME/theos
+          make package FINALPACKAGE=1
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: compiled-dylib
+          path: .theos/obj/debug/arm64/*.dylib
